@@ -1,27 +1,28 @@
 export const checkUser = (username) => {
-
+    return true;
 }
 
-export const generateSalt = () => {
-    return ["salt", "token"]
+export const generateSalt = (username) => {
+    return ["salt", "token"] //или false
 }
 
-export const putPassword = () => {
-
+export const putPassword = (token, hashPassword) => {
+    //добавляет пароль для пользователя во время регистрации
+    return true;
 }
 
-export const getSalt = () => {
-    return ["salt", "token"]
+export const getSalt = (username) => {
+    return ["salt", "token"] //или false
 }
 
-export const postPassword = () => {
-    return ["accessToken", "refreshToken"]
+export const postPassword = (token, hashPassword) => {
+    return ["accessToken", "refreshToken"] //или false
 }
 
-export const getMyDots = () => {
-
+export const getMyDots = (accessToken) => {
+    return ([/*возвращает точки в массиве*/]) //или false
 }
 
-export const useRefresh = () => {
-
+export const newTokensByRefresh = (refreshToken) => {
+    return (["accessToken", "refreshToken"])
 }
