@@ -1,23 +1,50 @@
 import create from 'zustand'
-import {generateSalt, getSalt, postPassword, putPassword, newTokensByRefresh} from "../communication/communication";
+import {generateSalt, getSalt, newTokensByRefresh, postPassword, putPassword} from "../communication/communication";
 import {hashingPassword} from "./hash";
+import axios from "axios";
 
 let accessToken;
 let refreshToken;
 
-const registration = (username, password) => {
-    let result = generateSalt(username);
-    if (result === false) {
-        //соль не была сгенерирована на сервере. Сбой в регистрации
-    } else {
-        let [salt, token] = result;
-        if (putPassword(token, hashingPassword(password, salt))) {
-            //пороль успешно добавлен на сервер
-            authorisation(username, password);
-        } else {
-            //пароль не был добавлен на сервер. Сбой в регистрации
+const registration = (username, password, setMessage, navigate) => {
+
+    // let result = generateSalt(username);
+    // if (result === false) {
+    //     //соль не была сгенерирована на сервере. Сбой в регистрации
+    // } else {
+    //     let [salt, token] = result;
+    //     if (putPassword(token, hashingPassword(password, salt))) {
+    //         //пороль успешно добавлен на сервер
+    //         authorisation(username, password);
+    //     } else {
+    //         //пароль не был добавлен на сервер. Сбой в регистрации
+    //     }
+    // }
+
+    axios({
+        method: 'post',
+        url: 'http://localhost:8080/generateSalt',
+        params: {
+            username: 'username'
         }
-    }
+    }).then((response) => {
+        let salt = response.data.salt
+        let token = response.data.token
+        axios({
+            method: 'post',
+            url: 'http://localhost:8080/putPassword',
+            params: {
+                token: token,
+                password: hashingPassword(password, salt)
+            }
+        }).then((response) => {
+            navigate("/start/authorisation")
+        }).catch((exception)=>{
+            setMessage('пароль не был добавлен на сервер. Сбой в регистрации')
+        })
+    }).catch((exception) => {
+        setMessage('соль не была сгенерирована на сервере. Сбой в регистрации')
+    });
 }
 const authorisation = (username, password) => {
     let result = getSalt(username);
@@ -58,8 +85,9 @@ const useStore = create((set) => ({
                 //должно быть что-то что говори о том, что точка не попала
             }
         },
-        registration: (username, password) => {
-            registration(username, password)
+        registration: (username, password, setMessage, navigate) => {
+            registration(username, password, setMessage, navigate)
+
         },
         authorisation: (username, password) => {
             authorisation(username, password)

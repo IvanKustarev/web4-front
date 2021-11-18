@@ -1,8 +1,9 @@
 import React from "react";
 import useStore from "./bll/state/store";
-import {BrowserRouter, NavLink, Route, Routes} from "react-router-dom";
+import {BrowserRouter, Route, Routes} from "react-router-dom";
 import StartPage from "./components/startPage/StartPage";
 import MainPage from "./components/mainPage/MainPage";
+import Component from "./components/test/Component";
 
 function App() {
     const people = useStore(state => state.people)

@@ -5,7 +5,7 @@ function Component() {
     const [likes, setLikes] = useState(0)
 
     function increment(){
-        setLikes()
+        setLikes(likes + 1)
     }function decrement(){
         setLikes(likes-1)
     }
@@ -13,8 +13,8 @@ function Component() {
     return (
         <div>
             <h1>{likes}</h1>
-            <button onClick={increment} value={"a"}>aaaaaa</button>
-            <button onClick={decrement} value={"b"}>bbbbbb</button>
+            <button onClick={increment} >incr</button>
+            <button onClick={decrement} >dec</button>
         </div>
     )
 }
