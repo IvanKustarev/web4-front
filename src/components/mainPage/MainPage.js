@@ -1,12 +1,24 @@
-import React, {useRef} from "react";
+import React, {useEffect, useRef} from "react";
 import useStore from "../../bll/state/store";
-import {getMyDots} from "../../bll/communication/communication";
+import {useNavigate} from "react-router";
 
 const MainPage = () => {
 
     const xRef = useRef()
     const yRef = useRef()
     const messRef = useRef()
+
+    const auth = useStore(state=>state.authorized)
+    const setAuth = useStore(state=>state.setAuthorized)
+
+    const navigate = useNavigate()
+
+    useEffect(()=>{
+        //If user is an Alumno, throw them to '/some/path'
+        if(!auth) {
+            navigate('/start')
+        }
+    })
 
     const setMessage = (message) => {
         messRef.current.innerHTML = message

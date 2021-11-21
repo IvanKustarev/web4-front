@@ -1,20 +1,28 @@
-import React from "react";
-import useStore from "./bll/state/store";
-import {BrowserRouter, Route, Routes} from "react-router-dom";
+import React, {useEffect} from "react";
+import {BrowserRouter, Route, Routes, withRouter} from "react-router-dom";
 import StartPage from "./components/startPage/StartPage";
 import MainPage from "./components/mainPage/MainPage";
-import Component from "./components/test/Component";
+import {useNavigate} from "react-router";
+
 
 function App() {
-    const people = useStore(state => state.people)
-    return (
-        <BrowserRouter>
-            <Routes>
-                <Route path={"/start/*"} element={<StartPage/>}/>
-                <Route path={"/main/*"} element={<MainPage/>}/>
-            </Routes>
-        </BrowserRouter>
-    );
+    /*const people = useStore(state => state.people)*/
+
+
+    /*if (auth) {
+        // return <BrowserRouter>
+        //         <Navigate to={"/to"}/>
+        // </BrowserRouter>
+    } else {*/
+        return (
+            <BrowserRouter>
+                <Routes>
+                    <Route path={"/start/*"} element={<StartPage/>}/>
+                    <Route path={"/main/*"} element={<MainPage/>}/>
+                </Routes>
+            </BrowserRouter>
+        );
+    // }
 }
 
 export default App;

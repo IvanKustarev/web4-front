@@ -1,6 +1,8 @@
 import React, {useRef} from "react";
 import useStore from "../../bll/state/store";
 import {useNavigate} from "react-router-dom";
+import GoogleSignIn from "./GoogleSignIn";
+import VKSignIn from "./VKSignIn";
 
 const Authorisation = () => {
 
@@ -23,6 +25,8 @@ const Authorisation = () => {
         <input type="text" ref={inputRefP}/>
         <label ref={messRef}/>
         <button onClick={auth}>Auth</button>
+        <GoogleSignIn/>
+        <VKSignIn/>
     </div>
 }
 

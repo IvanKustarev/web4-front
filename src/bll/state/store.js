@@ -1,37 +1,40 @@
 import create from 'zustand'
-import {addDot, authorisation, getMyDots, newTokensByRefresh, registration} from "../communication/communication";
+import {addDot, authorisation, getMyDots, registration, signByVk, singByGoogle} from "../communication/communication";
 
-let tokens = {
-    accessToken: "",
-    refreshToken: ""
-}
-
-// const updateTokens = (refreshToken) => {
-//     //отправляет рефреш и получает два новых ключа. При неудаче выкидывает в окно фвторизации
-//     let result = newTokensByRefresh(refreshToken);
-//     if (result === false) {
-//         //токены не смогли обновиться. Нужно выкинуть пользователя на экран логина
-//     } else {
-//         [accessToken, refreshToken] = result;
-//     }
-// }
-
-const useStore = create((set) => ({
+let store = (set) => ({
+        authorized: false,
+        tokens: null,
+        setTokens: (access, refresh) => set((state) => ({
+                tokens: {
+                    accessToken: access,
+                    refreshToken: refresh
+                }
+            }
+        )),
+        setAuthorized: (auth) => set((state) => ({authorized: auth})),
         addDot: (Dot, setMessage) => {
-            addDot(Dot, tokens, setMessage)
+            addDot(Dot, setMessage)
         },
         getMyDots: (dots) => {
-            getMyDots(tokens, dots)
+            getMyDots(dots)
         },
         registration: (username, password, setMessage, navigate) => {
-            registration(username, password, setMessage, navigate, tokens)
-
+            registration(username, password, setMessage, navigate)
         },
         authorisation: (username, password, setMessage, navigate) => {
-            authorisation(username, password, setMessage, navigate, tokens)
+            authorisation(username, password, setMessage, navigate)
         },
-
+        signByVk: () => set
+        ((state) => {
+            signByVk(state.setTokens, state.setAuthorized)
+        }),
+        signByGoogle: (navigate) => set
+        ((state) => {
+            singByGoogle(state.setTokens, state.setAuthorized, navigate)
+        })
     }
-))
+)
+
+const useStore = create(store)
 
 export default useStore;

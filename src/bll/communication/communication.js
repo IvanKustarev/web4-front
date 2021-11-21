@@ -1,7 +1,9 @@
+import React from "react";
 import axios from "axios";
 import {hashingPassword} from "../state/hash";
+import useStore from "../state/store";
 
-export const registration = (username, password, setMessage, navigate, tokens) => {
+export const registration = (username, password, setMessage, navigate) => {
     axios({
         method: 'post',
         url: 'http://localhost:8080/checkUser',
@@ -29,7 +31,7 @@ export const registration = (username, password, setMessage, navigate, tokens) =
                         password: hashingPassword(password, salt)
                     }
                 }).then((response) => {
-                    authorisation(username, password, setMessage, navigate, tokens)
+                    authorisation(username, password, setMessage, navigate)
                 }).catch((exception) => {
                     setMessage('пароль не был добавлен на сервер. Сбой в регистрации')
                 })
@@ -70,6 +72,7 @@ export const authorisation = (username, password, setMessage, navigate, tokens) 
                 }).then((response) => {
                     tokens.accessToken = response.data.accessToken
                     tokens.refreshToken = response.data.refreshToken
+                    console.log(response)
                     navigate("/main")
                 }).catch((exception) => {
                     setMessage('пароль не был сравнен на сервер. Сбой в авторизации')
@@ -82,7 +85,7 @@ export const authorisation = (username, password, setMessage, navigate, tokens) 
     })
 }
 
-export const addDot = (dot, tokens, setMessage) => {
+export const addDot = (dot, setMessage, tokens) => {
     axios({
         method: 'put',
         url: 'http://localhost:8080/addDot',
@@ -102,7 +105,7 @@ export const addDot = (dot, tokens, setMessage) => {
     )
 }
 
-export const getMyDots = (tokens, dots) => {
+export const getMyDots = (dots, tokens) => {
     axios({
         method: 'post',
         url: 'http://localhost:8080/getMyDots',
@@ -123,7 +126,7 @@ export const getMyDots = (tokens, dots) => {
     )
 }
 
-export const updateTokens = (tokens, callBack) => {
+export const updateTokens = (callBack, tokens) => {
     axios({
         method: 'post',
         url: 'http://localhost:8080/checkToken',
@@ -156,5 +159,43 @@ export const updateTokens = (tokens, callBack) => {
         }
     ).catch(() => {
         console.log('ошибка при проверке access')
+    })
+}
+
+export const signByVk =(setTokens, setAuthorized) => {
+    window.VK.Auth.login((user) => {
+        axios({
+            method: 'post',
+            url: 'http://localhost:8080/signByVk',
+            params: {
+                mid: user.session.mid,
+                parameters: `expire=${user.session.expire}mid=${user.session.mid}secret=${user.session.secret}sid=${user.session.sid}`,
+                sig: user.session.sig
+            }
+        }).then((response)=>{
+            setTokens(response.data.accessToken, response.data.refreshToken)
+            setAuthorized(true)
+        })
+    })
+}
+
+export const singByGoogle = (setTokens, setAuthorized, navigate) => {
+    const googleAuth = window.gapi.auth2.getAuthInstance()
+    googleAuth.signIn(
+        {
+            scope: 'profile email'
+        }
+    ).then((user) => {
+        axios({
+            method: 'post',
+            url: 'http://localhost:8080/signByGoogle',
+            params: {
+                idTokenString: user.wc.id_token
+            }
+        }).then((response)=>{
+            setTokens(response.data.accessToken, response.data.refreshToken)
+            setAuthorized(true)
+            navigate("/main")
+        })
     })
 }
