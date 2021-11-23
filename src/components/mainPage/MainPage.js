@@ -16,17 +16,15 @@ const MainPage = () => {
     //
     // const updateDots = useStore(state => state.updateDots)
 
-    const logIn = useStore(state => state.logIn)
+    // const logIn = useStore(state => state.logIn)
+    const authorized = useStore(state=>state.authorized)
 
     const navigate = useNavigate()
 
     useEffect(() => {
-        logIn(navigate)
-        // if (!auth) {
-        //     navigate('/start')
-        // }
-        // listeningServer(true)
-        // updateDots()
+        if (!authorized) {
+            navigate('/start')
+        }
     })
 
     return <div>

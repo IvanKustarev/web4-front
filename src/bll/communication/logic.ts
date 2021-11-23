@@ -1,9 +1,9 @@
-import React from "react";
 import axios from "axios";
 import {hashingPassword} from "../state/hash";
-import useStore from "../state/store";
+import {DotType, StateType, TokensType} from "../../types";
+import {connect, disconnect} from "./webSocket";
 
-export const registration = (username, password, setMessage, navigate) => {
+export const registration = (username: string, password: string, setMessage: (mes: string) => {}, navigate: Function) => {
     axios({
         method: 'post',
         url: 'http://localhost:8080/checkUser',
@@ -43,7 +43,7 @@ export const registration = (username, password, setMessage, navigate) => {
     })
 }
 
-export const sendDot = (dot, tokens) => {
+export const sendDot = (dot: DotType, tokens: TokensType) => {
     axios({
         method: 'put',
         url: 'http://localhost:8080/addDot',
@@ -66,28 +66,29 @@ export const sendDot = (dot, tokens) => {
     )
 }
 
-export const updateDots = (tokens, setDots) => {
+export const updateDots = (state:StateType/*tokens: TokensType, setDots: (dot: DotType) => void*/) => {
     axios({
         method: 'post',
         url: 'http://localhost:8080/getMyDots',
         params: {
-            accessToken: tokens.accessToken,
+            accessToken: state.tokens.accessToken,
         }
     }).then((response) => {
             console.log("Обновились точки!:")
             console.log(response.data)
-            setDots(response.data)
+            state.setDots(response.data)
         }
     ).catch(() => {
             console.log("проблема при взятии точек")
-            updateTokens(tokens, () => {
-                updateDots(tokens)
-            })
+            updateTokens(() => {
+                    updateDots(tokens)
+                },
+                tokens)
         }
     )
 }
 
-export const updateTokens = (callBack, tokens, setTokens) => {
+export const updateTokens = (callBack: Function, tokens: TokensType, setTokens: (tokens: TokensType) => void) => {
     axios({
         method: 'post',
         url: 'http://localhost:8080/checkToken',
@@ -111,7 +112,10 @@ export const updateTokens = (callBack, tokens, setTokens) => {
                         console.log('выкидывать на экрын логирования')
                     } else {
                         console.log('токены обновлены')
-                        setTokens(response.data.accessToken, response.data.refreshToken)
+                        // tokens: TokensType ={
+                        //
+                        // }
+                        setTokens({accessToken: response.data.accessToken, refreshToken: response.data.refreshToken})
                         callBack()
                     }
                 })
@@ -144,7 +148,7 @@ export const signByVk = (setTokens, setAuthorized, setUserId, navigate) => {
     })
 }
 
-export const singByGoogle = (setTokens, setAuthorized, setUserId, navigate) => {
+export const singByGoogle = (state:StateType) => {
 
     const googleAuth = window.gapi.auth2.getAuthInstance()
     googleAuth.signIn(
@@ -159,16 +163,12 @@ export const singByGoogle = (setTokens, setAuthorized, setUserId, navigate) => {
                 idTokenString: user.wc.id_token
             }
         }).then((response) => {
-            setTokens(response.data.accessToken, response.data.refreshToken)
-            setAuthorized(true)
-            console.log(response.data.userId)
-            setUserId(response.data.userId)
-            navigate("/main")
+            logIn(state)
         })
     })
 }
 
-export const authorisation = (username, password, setMessage, setTokens, navigate, setUserId) => {
+export const authorisation = (username: string, password: string, setMessage: (mess: string) => void, setTokens: (tokens: TokensType) => {}, navigate: Function, setUserId: (userId: number) => {}) => {
     axios({
         method: 'post',
         url: 'http://localhost:8080/checkUser',
@@ -210,3 +210,21 @@ export const authorisation = (username, password, setMessage, setTokens, navigat
         }
     })
 }
+
+const logIn = (state:StateType) => {
+    state.setTokens(response.data.accessToken, response.data.refreshToken)
+    state.setUserId(response.data.userId)
+    state.setAuthorized(true)
+    // state.listeningServer(true)
+    connect(updateDots, state.userId, )
+    state.updateDots()
+    state.navigate("/main")
+})
+
+// const listeningServer: (bool:boolean) => {
+//     if (bool) {
+//         connect(updateDots, userId)
+//     }else {
+//         disconnect()
+//     }
+// }),

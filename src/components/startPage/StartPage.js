@@ -6,11 +6,11 @@ import useStore from "../../bll/state/store";
 
 const StartPage = () => {
 
-    const listeningServer = useStore(state=>state.listeningServer)
-
-    useEffect(() => {
-        listeningServer(false)
-    })
+    // const listeningServer = useStore(state=>state.listeningServer)
+    //
+    // useEffect(() => {
+    //     listeningServer(false)
+    // })
 
     return (
         /*здесь только компоненты ставить*/
