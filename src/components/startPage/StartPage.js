@@ -1,12 +1,19 @@
-import React, {useRef} from "react";
-import useStore from "../../bll/state/store";
+import React, {useEffect} from "react";
 import {NavLink, Route, Routes} from "react-router-dom";
-import MainPage from "../mainPage/MainPage";
 import Authorisation from "./Authorisation";
 import Registration from "./Registration";
+import useStore from "../../bll/state/store";
 
 const StartPage = () => {
+
+    const listeningServer = useStore(state=>state.listeningServer)
+
+    useEffect(() => {
+        listeningServer(false)
+    })
+
     return (
+        /*здесь только компоненты ставить*/
         <div>
             <NavLink to={"authorisation"}>authorisation</NavLink>
             <NavLink to={"registration"}>registration</NavLink>

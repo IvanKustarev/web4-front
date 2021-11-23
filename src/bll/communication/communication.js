@@ -42,7 +42,133 @@ export const registration = (username, password, setMessage, navigate) => {
         }
     })
 }
-export const authorisation = (username, password, setMessage, navigate, tokens) => {
+
+export const sendDot = (dot, tokens) => {
+    axios({
+        method: 'put',
+        url: 'http://localhost:8080/addDot',
+        params: {
+            token: tokens.accessToken,
+            x: dot.x,
+            y: dot.y,
+            r: dot.r
+        }
+    }).then(
+        () => {
+            console.log('Точка успешно добавлена')
+        }
+    ).catch(() => {
+            console.log('Проблемы с добавлением точки')
+            updateTokens(tokens, () => {
+                sendDot(dot, tokens)
+            })
+        }
+    )
+}
+
+export const updateDots = (tokens, setDots) => {
+    axios({
+        method: 'post',
+        url: 'http://localhost:8080/getMyDots',
+        params: {
+            accessToken: tokens.accessToken,
+        }
+    }).then((response) => {
+            console.log("Обновились точки!:")
+            console.log(response.data)
+            setDots(response.data)
+        }
+    ).catch(() => {
+            console.log("проблема при взятии точек")
+            updateTokens(tokens, () => {
+                updateDots(tokens)
+            })
+        }
+    )
+}
+
+export const updateTokens = (callBack, tokens, setTokens) => {
+    axios({
+        method: 'post',
+        url: 'http://localhost:8080/checkToken',
+        params: {
+            token: tokens.accessToken,
+        }
+    }).then((response) => {
+            if (response.data === true) {
+                console.log('проверил access, он валиден. Ошибка не в токенах')
+            } else {
+                console.log('будем обновлято токены')
+                axios({
+                    method: 'post',
+                    url: 'http://localhost:8080/updateTokens',
+                    params: {
+                        refreshToken: tokens.refreshToken,
+                    }
+                }).then((response) => {
+                    if (response.data === "") {
+                        //выкидывать на экрын логирования
+                        console.log('выкидывать на экрын логирования')
+                    } else {
+                        console.log('токены обновлены')
+                        setTokens(response.data.accessToken, response.data.refreshToken)
+                        callBack()
+                    }
+                })
+            }
+        }
+    ).catch(() => {
+        console.log('ошибка при проверке access')
+    })
+}
+
+
+//необходимо объединить с гугловсуой
+export const signByVk = (setTokens, setAuthorized, setUserId, navigate) => {
+    window.VK.Auth.login((user) => {
+        axios({
+            method: 'post',
+            url: 'http://localhost:8080/signByVk',
+            params: {
+                mid: user.session.mid,
+                parameters: `expire=${user.session.expire}mid=${user.session.mid}secret=${user.session.secret}sid=${user.session.sid}`,
+                sig: user.session.sig
+            }
+        }).then((response) => {
+            setTokens(response.data.accessToken, response.data.refreshToken)
+            setAuthorized(true)
+            console.log(response.data.userId)
+            setUserId(response.data.userId)
+            navigate("/main")
+        })
+    })
+}
+
+export const singByGoogle = (setTokens, setAuthorized, setUserId, navigate) => {
+
+    const googleAuth = window.gapi.auth2.getAuthInstance()
+    googleAuth.signIn(
+        {
+            scope: 'profile email'
+        }
+    ).then((user) => {
+        axios({
+            method: 'post',
+            url: 'http://localhost:8080/signByGoogle',
+            params: {
+                idTokenString: user.wc.id_token
+            }
+        }).then((response) => {
+            setTokens(response.data.accessToken, response.data.refreshToken)
+            setAuthorized(true)
+            console.log(response.data.userId)
+            setUserId(response.data.userId)
+            navigate("/main")
+        })
+    })
+}
+
+export const authorisation = (username, password, setMessage, setTokens, navigate, setUserId) => {
     axios({
         method: 'post',
         url: 'http://localhost:8080/checkUser',
@@ -70,8 +196,8 @@ export const authorisation = (username, password, setMessage, navigate, tokens) 
                         password: hashingPassword(password, salt)
                     }
                 }).then((response) => {
-                    tokens.accessToken = response.data.accessToken
-                    tokens.refreshToken = response.data.refreshToken
+                    setTokens(response.data.accessToken, response.data.refreshToken)
+                    setUserId(response.data.userId)
                     console.log(response)
                     navigate("/main")
                 }).catch((exception) => {
@@ -82,120 +208,5 @@ export const authorisation = (username, password, setMessage, navigate, tokens) 
                 //доделать update tokens необходимо удалять из базы пользователей, у которых не стоит пароля для повторной попытки их добавления
             });
         }
-    })
-}
-
-export const addDot = (dot, setMessage, tokens) => {
-    axios({
-        method: 'put',
-        url: 'http://localhost:8080/addDot',
-        params: {
-            token: tokens.accessToken,
-            x: dot.x,
-            y: dot.y
-        }
-    }).then(
-        setMessage('Точка успешно добавлена')
-    ).catch(() => {
-            setMessage('Проблемы с добавлением точки')
-            updateTokens(tokens, () => {
-                addDot(dot, tokens, setMessage)
-            })
-        }
-    )
-}
-
-export const getMyDots = (dots, tokens) => {
-    axios({
-        method: 'post',
-        url: 'http://localhost:8080/getMyDots',
-        params: {
-            accessToken: tokens.accessToken,
-        }
-    }).then((response) => {
-            // console.log(response.data)
-            dots = response.data
-            console.log(dots[0].x)
-        }
-    ).catch(() => {
-            console.log("проблема при взятии точек")
-            updateTokens(tokens, () => {
-                getMyDots(tokens, dots)
-            })
-        }
-    )
-}
-
-export const updateTokens = (callBack, tokens) => {
-    axios({
-        method: 'post',
-        url: 'http://localhost:8080/checkToken',
-        params: {
-            token: tokens.accessToken,
-        }
-    }).then((response) => {
-            if (response.data === true) {
-                console.log('проверил access, он валиден. Ошибка не в токенах')
-            } else {
-                console.log('будем обновлято токены')
-                axios({
-                    method: 'post',
-                    url: 'http://localhost:8080/updateTokens',
-                    params: {
-                        refreshToken: tokens.refreshToken,
-                    }
-                }).then((response) => {
-                    if (response.data === "") {
-                        //выкидывать на экрын логирования
-                        console.log('выкидывать на экрын логирования')
-                    } else {
-                        console.log('токены обновлены')
-                        tokens.accessToken = response.data.accessToken
-                        tokens.refreshToken = response.data.refreshToken
-                        callBack()
-                    }
-                })
-            }
-        }
-    ).catch(() => {
-        console.log('ошибка при проверке access')
-    })
-}
-
-export const signByVk =(setTokens, setAuthorized) => {
-    window.VK.Auth.login((user) => {
-        axios({
-            method: 'post',
-            url: 'http://localhost:8080/signByVk',
-            params: {
-                mid: user.session.mid,
-                parameters: `expire=${user.session.expire}mid=${user.session.mid}secret=${user.session.secret}sid=${user.session.sid}`,
-                sig: user.session.sig
-            }
-        }).then((response)=>{
-            setTokens(response.data.accessToken, response.data.refreshToken)
-            setAuthorized(true)
-        })
-    })
-}
-
-export const singByGoogle = (setTokens, setAuthorized, navigate) => {
-    const googleAuth = window.gapi.auth2.getAuthInstance()
-    googleAuth.signIn(
-        {
-            scope: 'profile email'
-        }
-    ).then((user) => {
-        axios({
-            method: 'post',
-            url: 'http://localhost:8080/signByGoogle',
-            params: {
-                idTokenString: user.wc.id_token
-            }
-        }).then((response)=>{
-            setTokens(response.data.accessToken, response.data.refreshToken)
-            setAuthorized(true)
-            navigate("/main")
-        })
     })
 }
