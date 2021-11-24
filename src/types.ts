@@ -18,3 +18,8 @@ export type StateType = {
     userId: number,
     dots: Array<DotType>
 }
+export type AuthResponseType = {
+    userId: number,
+    accessToken: string,
+    refreshToken: string
+}

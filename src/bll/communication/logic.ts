@@ -1,6 +1,6 @@
 import axios from "axios";
 import {hashingPassword} from "../state/hash";
-import {DotType, StateType, TokensType} from "../../types";
+import {AuthResponseType, DotType, StateType, TokensType} from "../../types";
 import {connect, disconnect} from "./webSocket";
 
 export const registration = (username: string, password: string, setMessage: (mes: string) => {}, navigate: Function) => {
@@ -66,7 +66,7 @@ export const sendDot = (dot: DotType, tokens: TokensType) => {
     )
 }
 
-export const updateDots = (state:StateType/*tokens: TokensType, setDots: (dot: DotType) => void*/) => {
+export const updateDots = (state: StateType/*tokens: TokensType, setDots: (dot: DotType) => void*/) => {
     axios({
         method: 'post',
         url: 'http://localhost:8080/getMyDots',
@@ -139,16 +139,16 @@ export const signByVk = (setTokens, setAuthorized, setUserId, navigate) => {
                 sig: user.session.sig
             }
         }).then((response) => {
-            setTokens(response.data.accessToken, response.data.refreshToken)
-            setAuthorized(true)
-            console.log(response.data.userId)
-            setUserId(response.data.userId)
-            navigate("/main")
+            logIn(state, {
+                userId: response.data.userId,
+                accessToken: response.data.accessToken,
+                refreshToken: response.data.refreshToken
+            })
         })
     })
 }
 
-export const singByGoogle = (state:StateType) => {
+export const singByGoogle = (state: StateType) => {
 
     const googleAuth = window.gapi.auth2.getAuthInstance()
     googleAuth.signIn(
@@ -163,12 +163,16 @@ export const singByGoogle = (state:StateType) => {
                 idTokenString: user.wc.id_token
             }
         }).then((response) => {
-            logIn(state)
+            logIn(state, {
+                userId: response.data.userId,
+                accessToken: response.data.accessToken,
+                refreshToken: response.data.refreshToken
+            })
         })
     })
 }
 
-export const authorisation = (username: string, password: string, setMessage: (mess: string) => void, setTokens: (tokens: TokensType) => {}, navigate: Function, setUserId: (userId: number) => {}) => {
+export const authorisation = (state: StateType, username: string, password: string, setMessage: (mess: string) => void, navigate: Function/*setTokens: (tokens: TokensType) => {}, navigate: Function, setUserId: (userId: number) => {}*/) => {
     axios({
         method: 'post',
         url: 'http://localhost:8080/checkUser',
@@ -196,10 +200,15 @@ export const authorisation = (username: string, password: string, setMessage: (m
                         password: hashingPassword(password, salt)
                     }
                 }).then((response) => {
-                    setTokens(response.data.accessToken, response.data.refreshToken)
-                    setUserId(response.data.userId)
-                    console.log(response)
-                    navigate("/main")
+                    // setTokens(response.data.accessToken, response.data.refreshToken)
+                    // setUserId(response.data.userId)
+                    // console.log(response)
+                    // navigate("/main")
+                    logIn(state, {
+                        userId: response.data.userId,
+                        accessToken: response.data.accessToken,
+                        refreshToken: response.data.refreshToken
+                    })
                 }).catch((exception) => {
                     setMessage('пароль не был сравнен на сервер. Сбой в авторизации')
                 })
@@ -211,15 +220,16 @@ export const authorisation = (username: string, password: string, setMessage: (m
     })
 }
 
-const logIn = (state:StateType) => {
-    state.setTokens(response.data.accessToken, response.data.refreshToken)
+const logIn = (state: StateType, response: AuthResponseType, navigate:Function) => {
+
+    state.setTokens(response.accessToken, response.refreshToken)
     state.setUserId(response.data.userId)
     state.setAuthorized(true)
     // state.listeningServer(true)
-    connect(updateDots, state.userId, )
+    connect(updateDots, state.userId,)
     state.updateDots()
     state.navigate("/main")
-})
+}
 
 // const listeningServer: (bool:boolean) => {
 //     if (bool) {
