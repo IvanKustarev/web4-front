@@ -3,12 +3,12 @@ import useStore from "../../bll/state/store";
 
 const DotAdding = () => {
 
-    const xRef = useRef()
-    const yRef = useRef()
-    const rRef = useRef()
-    const messRef = useRef()
+    const xRef:{current: any} = useRef()
+    const yRef:{current: any} = useRef()
+    const rRef:{current: any} = useRef()
+    const messRef:{current: any} = useRef()
 
-    const setMessage = (message) => {
+    const setMessage = (message:string) => {
         messRef.current.innerHTML = message
     }
 

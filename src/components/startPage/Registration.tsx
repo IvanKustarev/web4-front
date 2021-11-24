@@ -4,17 +4,17 @@ import {useNavigate} from "react-router-dom";
 
 const Registration = () => {
 
-    const inputRefUN = useRef()
-    const inputRefP = useRef()
-    const messRef = useRef()
-    const registr = useStore(state => state.registration)
+    const inputRefUN:{current: any} = useRef()
+    const inputRefP:{current: any} = useRef()
+    const messRef:{current: any} = useRef()
+    const registration = useStore(state => state.registration)
 
     const navigate = useNavigate();
     const reg = () => {
-        registr(inputRefUN.current.value, inputRefP.current.value, setMessage, navigate)
+        registration(inputRefUN.current.value, inputRefP.current.value, setMessage, navigate)
     }
 
-    const setMessage = (message) => {
+    const setMessage = (message:string) => {
         messRef.current.innerHTML = message
     }
 

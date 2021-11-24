@@ -3,12 +3,10 @@ import useStore from "../../bll/state/store";
 
 const Results = () => {
 
-    const dots = useStore(state=>state.dots)
+    const dots = useStore(state=>state.getDots())
 
-    // useEffect(()=>{
-    //     updateDots()
-    //     // console.log("aaa")
-    // })
+    console.log("dots:")
+    console.log(dots)
 
     let res = dots.map(function(item) {
         return <p key={item.id}>

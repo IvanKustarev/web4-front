@@ -6,8 +6,10 @@ const VKSignIn = () => {
 
     // https://vk.com/dev/openapi_2?f=6.1.+VK.Observer.subscribe
 
+
+
     useEffect(()=>{
-        window.VK.init({
+        (window as any).VK.init({
             apiId: 8006074
         });
     })

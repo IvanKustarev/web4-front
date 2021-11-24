@@ -6,9 +6,9 @@ import VKSignIn from "./VKSignIn";
 
 const Authorisation = () => {
 
-    const inputRefUN = useRef()
-    const inputRefP = useRef()
-    const messRef = useRef()
+    const inputRefUN:{current: any} = useRef()
+    const inputRefP:{current: any} = useRef()
+    const messRef:{current: any} = useRef()
     const authorisation = useStore(state => state.authorisation)
 
     const navigate = useNavigate();
@@ -16,7 +16,7 @@ const Authorisation = () => {
         authorisation(inputRefUN.current.value, inputRefP.current.value, setMessage, navigate)
     }
 
-    const setMessage = (message) => {
+    const setMessage = (message:string) => {
         messRef.current.innerHTML = message
     }
 

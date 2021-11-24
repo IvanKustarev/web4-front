@@ -1,9 +1,9 @@
 import axios from "axios";
 import {hashingPassword} from "../state/hash";
 import {AuthResponseType, DotType, StateType, TokensType} from "../../types";
-import {connect, disconnect} from "./webSocket";
+import {connect} from "./webSocket";
 
-export const registration = (username: string, password: string, setMessage: (mes: string) => {}, navigate: Function) => {
+export const registration = (state: StateType, username: string, password: string, setMessage: (mes: string) => void, navigate: Function) => {
     axios({
         method: 'post',
         url: 'http://localhost:8080/checkUser',
@@ -31,7 +31,7 @@ export const registration = (username: string, password: string, setMessage: (me
                         password: hashingPassword(password, salt)
                     }
                 }).then((response) => {
-                    authorisation(username, password, setMessage, navigate)
+                    authorisation(state, username, password, setMessage, navigate)
                 }).catch((exception) => {
                     setMessage('пароль не был добавлен на сервер. Сбой в регистрации')
                 })
@@ -43,7 +43,7 @@ export const registration = (username: string, password: string, setMessage: (me
     })
 }
 
-export const sendDot = (dot: DotType, tokens: TokensType) => {
+export const sendDot = (dot: DotType, tokens: TokensType, errCallBack: Function) => {
     axios({
         method: 'put',
         url: 'http://localhost:8080/addDot',
@@ -57,43 +57,40 @@ export const sendDot = (dot: DotType, tokens: TokensType) => {
         () => {
             console.log('Точка успешно добавлена')
         }
-    ).catch(() => {
-            console.log('Проблемы с добавлением точки')
-            updateTokens(tokens, () => {
-                sendDot(dot, tokens)
-            })
+    ).catch(
+        (err) => {
+            console.log(err)
+            errCallBack()
         }
     )
 }
 
-export const updateDots = (state: StateType/*tokens: TokensType, setDots: (dot: DotType) => void*/) => {
+export const updateDots = (state: StateType, errCallBack: Function) => {
     axios({
         method: 'post',
         url: 'http://localhost:8080/getMyDots',
         params: {
-            accessToken: state.tokens.accessToken,
+            accessToken: state.getTokens().accessToken,
         }
     }).then((response) => {
-            console.log("Обновились точки!:")
-            console.log(response.data)
             state.setDots(response.data)
+            // console.log(state.getDots())
         }
-    ).catch(() => {
-            console.log("проблема при взятии точек")
-            updateTokens(() => {
-                    updateDots(tokens)
-                },
-                tokens)
+    ).catch(
+        (err) => {
+            // console.log("2222222222222222222222222222222")
+            console.log(err)
+            errCallBack()
         }
     )
 }
 
-export const updateTokens = (callBack: Function, tokens: TokensType, setTokens: (tokens: TokensType) => void) => {
+export const updateTokens = (state: StateType, callBack: Function, errCallBack: Function) => {
     axios({
         method: 'post',
         url: 'http://localhost:8080/checkToken',
         params: {
-            token: tokens.accessToken,
+            token: state.getTokens().accessToken,
         }
     }).then((response) => {
             if (response.data === true) {
@@ -104,18 +101,14 @@ export const updateTokens = (callBack: Function, tokens: TokensType, setTokens: 
                     method: 'post',
                     url: 'http://localhost:8080/updateTokens',
                     params: {
-                        refreshToken: tokens.refreshToken,
+                        refreshToken: state.getTokens().refreshToken,
                     }
                 }).then((response) => {
                     if (response.data === "") {
-                        //выкидывать на экрын логирования
-                        console.log('выкидывать на экрын логирования')
+                        // //выкидывать на экрын логирования
+                        errCallBack()
                     } else {
-                        console.log('токены обновлены')
-                        // tokens: TokensType ={
-                        //
-                        // }
-                        setTokens({accessToken: response.data.accessToken, refreshToken: response.data.refreshToken})
+                        state.setTokens({accessToken: response.data.accessToken, refreshToken: response.data.refreshToken})
                         callBack()
                     }
                 })
@@ -126,10 +119,8 @@ export const updateTokens = (callBack: Function, tokens: TokensType, setTokens: 
     })
 }
 
-
-//необходимо объединить с гугловсуой
-export const signByVk = (setTokens, setAuthorized, setUserId, navigate) => {
-    window.VK.Auth.login((user) => {
+export const signByVk = (state: StateType, navigate: Function) => {
+    (<any>window).VK.Auth.login((user: { session: { mid: string, sig: string, expire: string, secret: string, sid: string } }) => {
         axios({
             method: 'post',
             url: 'http://localhost:8080/signByVk',
@@ -143,19 +134,18 @@ export const signByVk = (setTokens, setAuthorized, setUserId, navigate) => {
                 userId: response.data.userId,
                 accessToken: response.data.accessToken,
                 refreshToken: response.data.refreshToken
-            })
+            }, navigate)
         })
     })
 }
 
-export const singByGoogle = (state: StateType) => {
-
-    const googleAuth = window.gapi.auth2.getAuthInstance()
+export const singByGoogle = (state: StateType, navigate: Function) => {
+    const googleAuth = (<any>window).gapi.auth2.getAuthInstance()
     googleAuth.signIn(
         {
             scope: 'profile email'
         }
-    ).then((user) => {
+    ).then((user: { wc: { id_token: string } }) => {
         axios({
             method: 'post',
             url: 'http://localhost:8080/signByGoogle',
@@ -167,7 +157,7 @@ export const singByGoogle = (state: StateType) => {
                 userId: response.data.userId,
                 accessToken: response.data.accessToken,
                 refreshToken: response.data.refreshToken
-            })
+            }, navigate)
         })
     })
 }
@@ -200,15 +190,11 @@ export const authorisation = (state: StateType, username: string, password: stri
                         password: hashingPassword(password, salt)
                     }
                 }).then((response) => {
-                    // setTokens(response.data.accessToken, response.data.refreshToken)
-                    // setUserId(response.data.userId)
-                    // console.log(response)
-                    // navigate("/main")
                     logIn(state, {
                         userId: response.data.userId,
                         accessToken: response.data.accessToken,
                         refreshToken: response.data.refreshToken
-                    })
+                    }, navigate)
                 }).catch((exception) => {
                     setMessage('пароль не был сравнен на сервер. Сбой в авторизации')
                 })
@@ -220,21 +206,24 @@ export const authorisation = (state: StateType, username: string, password: stri
     })
 }
 
-const logIn = (state: StateType, response: AuthResponseType, navigate:Function) => {
-
-    state.setTokens(response.accessToken, response.refreshToken)
-    state.setUserId(response.data.userId)
+const logIn = (state: StateType, response: AuthResponseType, navigate: Function) => {
+    state.setTokens({accessToken: response.accessToken, refreshToken: response.refreshToken})
+    state.setUserId(response.userId)
     state.setAuthorized(true)
-    // state.listeningServer(true)
-    connect(updateDots, state.userId,)
-    state.updateDots()
-    state.navigate("/main")
+    connect(state, () => {
+            updateDots(state, () => {
+                console.log("err with dot updating")
+                // state.logOut(navigate)
+            })
+        },
+        () => {
+            console.log("err with connecting")
+            // state.logOut(navigate)
+        }
+    )
+    updateDots(state, () => {
+        console.log("err with dot updating during logIn time")
+        // state.logOut(navigate)
+    })
+    navigate("/main")
 }
-
-// const listeningServer: (bool:boolean) => {
-//     if (bool) {
-//         connect(updateDots, userId)
-//     }else {
-//         disconnect()
-//     }
-// }),

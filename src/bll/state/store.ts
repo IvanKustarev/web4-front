@@ -1,70 +1,74 @@
 import create from 'zustand'
-import {authorisation, updateDots, registration, sendDot, signByVk, singByGoogle} from "../communication/logic";
-import {connect, disconnect} from "../communication/webSocket";
+import {authorisation, registration, sendDot, signByVk, singByGoogle, updateTokens} from "../communication/logic";
+import {disconnect} from "../communication/webSocket";
 import {DotType, StateType, StoreType, TokensType} from "../../types";
 
-let store:StoreType = (set: Function) => ({
-        authorized: false,
-        tokens: {
+const store: StoreType = (set: Function, get: Function) => ({
+        _authorized: false as boolean,
+        _tokens: {
             accessToken: "",
             refreshToken: ""
         },
-        userId: -1,
-        dots: [],
-        setTokens: (tokens:TokensType) => set(() => ({
-                tokens: {
+        _userId: -1 as number,
+        _dots: [],
+        setUserId: (userId: number) => set((state: StateType) => ({
+            _userId: userId
+        })),
+        getUserId: () => get()._userId,
+        setTokens: (tokens: TokensType) => set((state: StateType) => ({
+                _tokens: {
                     accessToken: tokens.accessToken,
                     refreshToken: tokens.refreshToken
                 }
             }
         )),
-        setAuthorized: (auth:boolean) => set(() => ({authorized: auth})),
-        // updateDots: () => {
-        //     set((state:StateType) => {
-        //         updateDots(state.tokens, state.setDots)
-        //     })
-        // },
+
+        getTokens: () => get()._tokens,
+        setAuthorized: (auth: boolean) => set(() => ({_authorized: auth})),
+        getAuthorized: () => get()._authorized,
         //надо переписать с историей вместо навигейта
-        logOut: (navigate:Function) => set((state:StateType)=>{
-            state.userId = -1
-            state.setTokens("", "")
+        logOut: (navigate: Function) => set((state: StateType) => {
+            state.setUserId(-1)
+            state.setTokens({accessToken: "", refreshToken: ""})
             state.setAuthorized(false)
-            state.listeningServer(false)
+            disconnect()
             navigate("/start")
         }),
-        setDots: (dots:DotType) => set((state:StateType) => {
-            console.log(dots)
-            state.dots = dots
+        setDots: (dots: Array<DotType>) => set((state: StateType) => {
+            state._dots = dots
         }),
-        sendDot: (dot:DotType) => set((state:StateType) => {
-            sendDot(dot, state.tokens)
+        getDots: () => get()._dots,
+        sendDot: (dot: DotType) => set((state: StateType) => {
+            sendDot(dot, state.getTokens(), () => {
+                updateTokens(state, () => {
+                    sendDot(dot, state.getTokens(), () => {
+                        console.log("Проблема с отправлением точек после перезагрузки токенов")
+                    })
+                    // state.logOut()
+                }, () => {
+                    console.log("Проблема с обновлением токенов после неудачного обновления точек")
+                })
+                // state.logOut()
+            })
         }),
-        registration: (username:string, password:string, setMessage:(mess:string)=>void, navigate:Function) => {
-            registration(username, password, setMessage, navigate)
-        },
-        authorisation: (username:string, password:string, setMessage:(mess:string)=>void, navigate:Function) => set((state:StateType) => {
-            authorisation(username, password, setMessage, state.setTokens, navigate, state.setUserId)
+        registration: (username: string, password: string, setMessage: (mess: string) => void, navigate: Function) => set((state: StateType) => {
+            registration(state, username, password, setMessage, navigate)
         }),
-        signByVk: (navigate:Function) => set
-        ((state:StateType) => {
-            signByVk(state.setTokens,  state.setUserId, navigate)
+        authorisation: (username: string, password: string, setMessage: (mess: string) => void, navigate: Function) => set((state: StateType) => {
+            authorisation(state, username, password, setMessage, navigate)
         }),
-        signByGoogle: (navigate:Function) => set
-        ((state:StateType) => {
-            singByGoogle(state.setTokens, state.setUserId, navigate)
+        signByVk: (navigate: Function) => set
+        ((state: StateType) => {
+            signByVk(state, navigate)
         }),
-        // listeningServer: (bool:boolean) => set((state:StateType) => {
-        //     if (bool) {
-        //         connect(state.updateDots, state.userId)
-        //     }else {
-        //         disconnect()
-        //     }
-        // }),
-        setUserId: (userId:number) => set((state:StateType) => {
-            state.userId = userId
+        signByGoogle: (navigate: Function) => set
+        ((state: StateType) => {
+            singByGoogle(state, navigate)
         })
     }
 )
+
+// export type StateType = typeof store
 
 const useStore = create(store)
 
