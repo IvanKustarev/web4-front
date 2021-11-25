@@ -64,11 +64,25 @@ const store: StoreType = (set: Function, get: Function) => ({
         signByGoogle: (navigate: Function) => set
         ((state: StateType) => {
             singByGoogle(state, navigate)
-        })
+        }),
+
+
+        message: "",
+        xErr: "",
+        yErr: "",
+        rErr: "",
+        rParam: 1,
+        // getMessage: () => get()._message,
+        setMessage: (mess: string) => set((state: StateType) => ({message: mess})),
+        // getXErr: () => get()._xErr,
+        setXErr: (mess: string) => set((state: StateType) => ({xErr: mess})),
+        // getYErr: () => get()._yErr,
+        setYErr: (mess: string) => set((state: StateType) => ({yErr: mess})),
+        // getRErr: () => get()._rErr,
+        setRErr: (mess: string) => set((state: StateType) => ({rErr: mess})),
+        setRParam: (r:number) => set((state: StateType) => ({rParam: r})),
     }
 )
-
-// export type StateType = typeof store
 
 const useStore = create(store)
 

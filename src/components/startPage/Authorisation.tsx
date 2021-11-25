@@ -21,10 +21,20 @@ const Authorisation = () => {
     }
 
     return <div>
-        <input type="text" ref={inputRefUN}/>
-        <input type="text" ref={inputRefP}/>
+        <div className="form-control">
+            <label className="label">
+                <span className="label-text">Username</span>
+            </label>
+            <input type="text" ref={inputRefUN} placeholder="username" className="input input-info input-bordered"/>
+        </div>
+        <div className="form-control">
+            <label className="label">
+                <span className="label-text">Password</span>
+            </label>
+            <input type="text" ref={inputRefP} placeholder="password" className="input input-info input-bordered"/>
+        </div>
         <label ref={messRef}/>
-        <button onClick={auth}>Auth</button>
+        <button className="btn btn-outline btn-secondary" onClick={auth}>Authorization</button>
         <GoogleSignIn/>
         <VKSignIn/>
     </div>

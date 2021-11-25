@@ -18,7 +18,8 @@ const VKSignIn = () => {
 
     const navigate = useNavigate()
 
-    return <button onClick={()=>{signByVk(navigate)}}>Sing by VK</button>
+    return <button className="btn btn-secondary" onClick={()=>{signByVk(navigate)}}>by VK</button>
+    // <button className="btn btn-secondary">secondary</button>
 };
 
 export default VKSignIn;

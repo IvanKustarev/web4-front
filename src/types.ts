@@ -36,6 +36,21 @@ export type StateType = {
 
     signByVk: (navigate: Function) => void
     signByGoogle: (navigate: Function) => void
+
+    message:string,
+    xErr:string,
+    yErr:string,
+    rErr:string,
+    rParam:number,
+    // getMessage:()=>string
+    setMessage:(mess:string)=>void
+    // getXErr:()=>string
+    setXErr:(mess:string)=>void
+    // getYErr:()=>string
+    setYErr:(mess:string)=>void
+    // getRErr:()=>string
+    setRErr:(mess:string)=>void
+    setRParam:(r:number)=>void
 }
 
 export type AuthResponseType = {

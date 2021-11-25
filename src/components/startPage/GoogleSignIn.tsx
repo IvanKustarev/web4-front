@@ -16,7 +16,12 @@ const GoogleSignIn = () => {
 
     const navigate = useNavigate()
 
-    return <button onClick={()=>{signByGoogle(navigate)}}>Sign by Google</button>
+    //     < button
+    // className = "btn btn-primary" > primary < /button>
+    //
+
+    return <button className="btn btn-primary" onClick={()=>{signByGoogle(navigate)}}>by Google</button>
+    // return <button className="btn btn-primary"> primary < /button>
 }
 
 export default GoogleSignIn;

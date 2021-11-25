@@ -1,0 +1,86 @@
+.start {
+    display: grid;
+    width: 510px;
+    margin: auto;
+    grid-template-rows: 60px 1fr;
+    grid-template-columns: 250px 250px;
+    grid-gap: 10px;
+
+    grid-template-areas:
+    "authorisation registration"
+    "routes routes"
+}
+
+.registration {
+    grid-area: registration;
+}
+
+.authorisation {
+    grid-area: authorisation;
+}
+
+.routes {
+    grid-area: routes;
+}
+
+.main {
+    display: grid;
+    width: 510px;
+    margin: auto;
+    grid-template-rows: 60px 850px 1fr;
+    grid-template-columns: 250px 250px;
+    grid-gap: 10px;
+
+    grid-template-areas:
+    "logout logout"
+    "dotsWorkContainer dotsWorkContainer"
+    "results results"
+}
+
+.logout {
+    grid-area: logout;
+}
+
+.dotsWorkContainer {
+    grid-area: dotsWorkContainer;
+}
+
+.results {
+    grid-area: results;
+}
+
+.area {
+    grid-area: area;
+}
+
+.xPar {
+    grid-area: xPar;
+}
+
+.yPar {
+    grid-area: yPar;
+}
+
+.rPar {
+    grid-area: rPar;
+}
+
+.check-dot {
+    grid-area: check-dot;
+}
+
+/*.username {*/
+/*    grid-area: username;*/
+/*}*/
+
+/*.password {*/
+/*    grid-area: password;*/
+/*}*/
+
+/*.auth-button {*/
+/*    grid-area: auth-button;*/
+/*}*/
+
+/*.signIn {*/
+/*    grid-area: signIn;*/
+/*}*/
