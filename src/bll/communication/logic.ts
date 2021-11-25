@@ -5,11 +5,11 @@ import {connect} from "./webSocket";
 
 export const registration = (state: StateType, username: string, password: string, setMessage: (mes: string) => void, navigate: Function) => {
 
-    (window as any).port = "7999"
+    (window as any).port = "8080"
 
     axios({
         method: 'post',
-        url: 'http://localhost:7999/checkUser',
+        url: 'http://localhost:8080/checkUser',
         params: {
             username: username
         }
@@ -19,7 +19,7 @@ export const registration = (state: StateType, username: string, password: strin
         } else {
             axios({
                 method: 'post',
-                url: 'http://localhost:7999/generateTokenAndSalt',
+                url: 'http://localhost:8080/generateTokenAndSalt',
                 params: {
                     username: username
                 }
@@ -28,7 +28,7 @@ export const registration = (state: StateType, username: string, password: strin
                 let token = response.data.token
                 axios({
                     method: 'put',
-                    url: 'http://localhost:7999/password',
+                    url: 'http://localhost:8080/password',
                     params: {
                         token: token,
                         password: hashingPassword(password, salt)
@@ -49,7 +49,7 @@ export const registration = (state: StateType, username: string, password: strin
 export const sendDot = (dot: DotType, tokens: TokensType, errCallBack: Function) => {
     axios({
         method: 'put',
-        url: 'http://localhost:7999/addDot',
+        url: 'http://localhost:8080/addDot',
         params: {
             token: tokens.accessToken,
             x: dot.x,
@@ -71,7 +71,7 @@ export const sendDot = (dot: DotType, tokens: TokensType, errCallBack: Function)
 export const updateDots = (state: StateType, errCallBack: Function) => {
     axios({
         method: 'post',
-        url: 'http://localhost:7999/getMyDots',
+        url: 'http://localhost:8080/getMyDots',
         params: {
             accessToken: state.getTokens().accessToken,
         }
@@ -91,7 +91,7 @@ export const updateDots = (state: StateType, errCallBack: Function) => {
 export const updateTokens = (state: StateType, callBack: Function, errCallBack: Function) => {
     axios({
         method: 'post',
-        url: 'http://localhost:7999/checkToken',
+        url: 'http://localhost:8080/checkToken',
         params: {
             token: state.getTokens().accessToken,
         }
@@ -102,7 +102,7 @@ export const updateTokens = (state: StateType, callBack: Function, errCallBack: 
                 console.log('будем обновлято токены')
                 axios({
                     method: 'post',
-                    url: 'http://localhost:7999/updateTokens',
+                    url: 'http://localhost:8080/updateTokens',
                     params: {
                         refreshToken: state.getTokens().refreshToken,
                     }
@@ -126,7 +126,7 @@ export const signByVk = (state: StateType, navigate: Function) => {
     (<any>window).VK.Auth.login((user: { session: { mid: string, sig: string, expire: string, secret: string, sid: string } }) => {
         axios({
             method: 'post',
-            url: 'http://localhost:7999/signByVk',
+            url: 'http://localhost:8080/signByVk',
             params: {
                 mid: user.session.mid,
                 parameters: `expire=${user.session.expire}mid=${user.session.mid}secret=${user.session.secret}sid=${user.session.sid}`,
@@ -151,7 +151,7 @@ export const singByGoogle = (state: StateType, navigate: Function) => {
     ).then((user: { wc: { id_token: string } }) => {
         axios({
             method: 'post',
-            url: 'http://localhost:7999/signByGoogle',
+            url: 'http://localhost:8080/signByGoogle',
             params: {
                 idTokenString: user.wc.id_token
             }
@@ -168,7 +168,7 @@ export const singByGoogle = (state: StateType, navigate: Function) => {
 export const authorisation = (state: StateType, username: string, password: string, setMessage: (mess: string) => void, navigate: Function/*setTokens: (tokens: TokensType) => {}, navigate: Function, setUserId: (userId: number) => {}*/) => {
     axios({
         method: 'post',
-        url: 'http://localhost:7999/checkUser',
+        url: 'http://localhost:8080/checkUser',
         params: {
             username: username
         }
@@ -178,7 +178,7 @@ export const authorisation = (state: StateType, username: string, password: stri
         } else {
             axios({
                 method: 'post',
-                url: 'http://localhost:7999/getTokenAndSalt',
+                url: 'http://localhost:8080/getTokenAndSalt',
                 params: {
                     username: username
                 }
@@ -187,7 +187,7 @@ export const authorisation = (state: StateType, username: string, password: stri
                 let token = response.data.token
                 axios({
                     method: 'post',
-                    url: 'http://localhost:7999/password',
+                    url: 'http://localhost:8080/password',
                     params: {
                         token: token,
                         password: hashingPassword(password, salt)
